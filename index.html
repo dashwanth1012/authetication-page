@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Registration & Login</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #74b9ff, #a29bfe);
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      width: 350px;
+      transition: all 0.3s ease;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2d3436;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #2d3436;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .input-group input:focus {
+      border-color: #0984e3;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #0984e3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #74b9ff;
+    }
+
+    .toggle-btn {
+      background: none;
+      color: #0984e3;
+      border: none;
+      text-align: center;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+
+    .success {
+      color: green;
+    }
+
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Registration Form -->
+    <form id="registerForm">
+      <h2>Register</h2>
+      <div class="input-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" required />
+      </div>
+      <div class="input-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" required />
+      </div>
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required />
+      </div>
+      <div class="input-group">
+        <label for="mobile">Mobile Number</label>
+        <input type="tel" id="mobile" required />
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required />
+      </div>
+      <button type="submit">Register</button>
+      <p id="registerMsg" class="message"></p>
+      <button type="button" class="toggle-btn" id="showLogin">Already have an account? Login</button>
+    </form>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="hidden">
+      <h2>Login</h2>
+      <div class="input-group">
+        <label for="loginInput">Username / Email / Mobile</label>
+        <input type="text" id="loginInput" required />
+      </div>
+      <div class="input-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" required />
+      </div>
+      <button type="submit">Login</button>
+      <p id="loginMsg" class="message"></p>
+      <button type="button" class="toggle-btn" id="showRegister">New user? Register here</button>
+    </form>
+  </div>
+
+  <script>
+    // Element references
+    const registerForm = document.getElementById('registerForm');
+    const loginForm = document.getElementById('loginForm');
+    const showLogin = document.getElementById('showLogin');
+    const showRegister = document.getElementById('showRegister');
+    const registerMsg = document.getElementById('registerMsg');
+    const loginMsg = document.getElementById('loginMsg');
+
+    // Toggle between register and login forms
+    showLogin.addEventListener('click', () => {
+      registerForm.classList.add('hidden');
+      loginForm.classList.remove('hidden');
+      clearMessages();
+    });
+
+    showRegister.addEventListener('click', () => {
+      loginForm.classList.add('hidden');
+      registerForm.classList.remove('hidden');
+      clearMessages();
+    });
+
+    function clearMessages() {
+      registerMsg.textContent = "";
+      loginMsg.textContent = "";
+    }
+
+    // Handle registration
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessages();
+
+      const data = {
+        name: document.getElementById('name').value.trim(),
+        username: document.getElementById('username').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        mobile: document.getElementById('mobile').value.trim(),
+        password: document.getElementById('password').value
+      };
+
+      try {
+        const res = await fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+
+        if (res.ok) {
+          registerMsg.textContent = result.message;
+          registerMsg.className = 'message success';
+          registerForm.reset();
+        } else {
+          registerMsg.textContent = result.message || 'Registration failed';
+          registerMsg.className = 'message error';
+        }
+      } catch (err) {
+        registerMsg.textContent = 'Server error';
+        registerMsg.className = 'message error';
+      }
+    });
+
+    // Handle login
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessages();
+
+      const data = {
+        loginInput: document.getElementById('loginInput').value.trim(),
+        password: document.getElementById('loginPassword').value
+      };
+
+      try {
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+
+        if (res.ok) {
+          loginMsg.textContent = result.message;
+          loginMsg.className = 'message success';
+          loginForm.reset();
+
+          // Example: Redirect or store session
+          // window.location.href = '/dashboard.html';
+        } else {
+          loginMsg.textContent = result.message || 'Login failed';
+          loginMsg.className = 'message error';
+        }
+      } catch (err) {
+        loginMsg.textContent = 'Server error';
+        loginMsg.className = 'message error';
+      }
+    });
+  </script>
+
+</body>
+</html>
